@@ -5,34 +5,64 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public Color colorList;
+    public Color[] colorList;
     public GameObject[] blockPrefabList;
     private PlayerManager playerManager;
-    private GameObject[,] grid = new GameObject[60, 48];
+    private GameObject[,] grid = new GameObject[72, 48];
     private GameObject nextBlock;
 
     // Start is called before the first frame update
     void Start()
     {
         playerManager = GameObject.Find("Player").GetComponent<PlayerManager>();
-        //playerManager.currentBlock = SpawnBlock();
-        //nextBlock = SpawnNextBlock();
+        playerManager.currentBlock = SpawnBlock();
+        AddToGrid(playerManager.currentBlock);
+        nextBlock = SpawnNextBlock();
     }
 
     private GameObject SpawnNextBlock()
     {
-        throw new NotImplementedException();
+        GameObject block = SpawnBlock();
+        block.transform.position = new Vector3(-9, 24);
+        return block;
+    }
+
+    private void AddToGrid(GameObject block)
+    {
+        foreach (Transform tile in block.transform)
+        {
+            foreach (Transform sand in tile.transform)
+            {
+                Vector2 point =
+                    gameObject.transform.TransformPoint(sand.transform.position);
+                int x = Mathf.RoundToInt(point.x / 0.5f);
+                int y = Mathf.RoundToInt(point.y / 0.5f);
+                grid[y, x] = sand.gameObject;
+            }
+        }
+    }
+
+    private void ChangeBlockColor(GameObject block, Color col)
+    {
+        foreach (Transform tileTransform in block.transform)
+        {
+            foreach (Transform sandT in tileTransform)
+            {
+                sandT.gameObject.GetComponent<SpriteRenderer>().color = col;
+            }
+        }
     }
 
     private GameObject SpawnBlock()
     {
-        throw new NotImplementedException();
-    }
+        int rndIntBlock = UnityEngine.Random.Range(0, blockPrefabList.Length);
+        GameObject block = Instantiate(blockPrefabList[rndIntBlock], transform);
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        Color rndColor = colorList[UnityEngine.Random.Range(0,colorList.Length)];
+        ChangeBlockColor(block, rndColor);
+
+        block.transform.position = new Vector3(0, 0);
+        return block;
     }
 
     //private void _CreateBloc()

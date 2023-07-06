@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerManager : MonoBehaviour
 {
     public GameObject currentBlock;
+    public bool isPlaced = false;
 
     // Start is called before the first frame update
     void Start()
