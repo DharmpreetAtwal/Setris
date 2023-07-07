@@ -10,8 +10,9 @@ public class GameManager : MonoBehaviour
     private PlayerManager playerManager;
     private GameObject[,] grid = new GameObject[72, 48];
     private GameObject nextBlock;
-    private Vector3 spawnPoint = new Vector3(9, 30);
+    private Vector3 spawnPoint = new Vector3(18, 30);
     private Vector3 nextBlockSpawnPoint = new Vector3(-9, 24);
+
 
     // Start is called before the first frame update
     void Start()
@@ -31,6 +32,7 @@ public class GameManager : MonoBehaviour
         nextBlock = SpawnNextBlock();
     }
 
+    // TODO: Move currentBlock gameObject around in MoveSand and CheckPlayerInput
     private void CheckPlayerInput()
     {
         GameObject currBlock = playerManager.currentBlock;
@@ -102,27 +104,33 @@ public class GameManager : MonoBehaviour
             for(int col=0; col<grid.GetLength(1); col++)
             {
                 GameObject sand = grid[row, col];
-                if(sand != null && row > 0 && col > 0 && col < 47)
+                if (row > 0)
                 {
                     GameObject sandBelow = grid[row - 1, col];
-                    GameObject sandLeft = grid[row, col - 1];
-                    GameObject sandLeftBelow = grid[row - 1, col - 1];
-                    GameObject sandRight = grid[row, col + 1];
-                    GameObject sandRightBelow = grid[row - 1, col + 1];
-                    if(sandBelow == null)
+                    if (sand != null && sandBelow == null)
                     {
                         sand.transform.position += new Vector3(0, -0.5f);
                         grid[row - 1, col] = sand;
                         grid[row, col] = null;
                         sandMoved = true;
-                    } else if(sandLeft == null && sandLeftBelow == null)
+                        continue;
+                    }
+                }
+
+                if(sand != null && row > 0 && row < 72 && col > 0 && col < 48)
+                {
+                    GameObject sandLeft = grid[row, col - 1];
+                    GameObject sandLeftBelow = grid[row - 1, col - 1];
+                    GameObject sandRight = grid[row, col + 1];
+                    GameObject sandRightBelow = grid[row - 1, col + 1];
+                    if(sandLeft == null && sandLeftBelow == null && col > 0)
                     {
                         sand.transform.position += new Vector3(-0.5f, -0.5f);
                         grid[row - 1, col - 1] = sand;
                         grid[row, col] = null;
                         sandMoved = true;
                     }
-                    else if(sandRight == null && sandRightBelow == null)
+                    else if(sandRight == null && sandRightBelow == null && col < 47)
                     {
                         sand.transform.position += new Vector3(0.5f, -0.5f);
                         grid[row - 1, col + 1] = sand;
