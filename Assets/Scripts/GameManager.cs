@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
         playerManager.currentBlock = SpawnBlock();
         AddToGrid(playerManager.currentBlock);
         nextBlock = SpawnNextBlock();
-        InvokeRepeating("MoveSand", 0.0f, 0.2f);
+        InvokeRepeating("UpdateGame", 0.0f, 0.2f);
     }
 
     private void ChangePlayerBlock()
@@ -31,7 +31,69 @@ public class GameManager : MonoBehaviour
         nextBlock = SpawnNextBlock();
     }
 
-    private void MoveSand()
+    private void CheckPlayerInput()
+    {
+        GameObject currBlock = playerManager.currentBlock;
+
+        if (playerManager.input[0])
+        {
+            foreach (Transform tile in currBlock.transform)
+            {
+                foreach (Transform sand in tile)
+                {
+                    sand.transform.position += new Vector3(-1, 0);
+                }
+            }
+
+            grid = new GameObject[72, 48];
+            foreach(Transform block in gameObject.transform)
+            {
+                foreach(Transform tile in block)
+                {
+                    foreach(Transform sand in tile)
+                    {
+                        Vector3 point = ToGridCoord(sand);
+                        if(point.x > -1)
+                        {
+                            grid[(int)point.y, (int)point.x] = sand.gameObject;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (playerManager.input[2])
+        {
+            foreach (Transform tile in currBlock.transform)
+            {
+                foreach (Transform sand in tile)
+                {
+                    sand.transform.position += new Vector3(1, 0);
+                }
+            }
+
+            grid = new GameObject[72, 48];
+            foreach (Transform block in gameObject.transform)
+            {
+                foreach (Transform tile in block)
+                {
+                    foreach (Transform sand in tile)
+                    {
+                        Vector3 point = ToGridCoord(sand);
+                        if (point.x > -1)
+                        {
+                            grid[(int)point.y, (int)point.x] = sand.gameObject;
+                        }
+                    }
+                }
+            }
+        }
+
+        playerManager.input = new bool[] { false, false, false, };
+
+    }
+
+    private void GlobalMoveSand()
     {
         bool sandMoved = false;
 
@@ -74,6 +136,13 @@ public class GameManager : MonoBehaviour
         if (!sandMoved) { ChangePlayerBlock(); }
     }
 
+    private void UpdateGame()
+    {
+        CheckPlayerInput();
+        GlobalMoveSand();
+    }
+
+
     private GameObject SpawnNextBlock()
     {
         GameObject block = SpawnBlock();
@@ -87,13 +156,19 @@ public class GameManager : MonoBehaviour
         {
             foreach (Transform sand in tile.transform)
             {
-                Vector2 point =
-                    gameObject.transform.TransformPoint(sand.transform.position);
-                int x = Mathf.RoundToInt(point.x / 0.5f);
-                int y = Mathf.RoundToInt(point.y / 0.5f);
-                grid[y, x] = sand.gameObject;
+                Vector2 point = ToGridCoord(sand);
+                grid[(int)point.y, (int)point.x] = sand.gameObject;
             }
         }
+    }
+
+    private Vector2 ToGridCoord(Transform sand)
+    {
+        Vector2 point =
+            gameObject.transform.TransformPoint(sand.position);
+        int x = Mathf.RoundToInt(point.x / 0.5f);
+        int y = Mathf.RoundToInt(point.y / 0.5f);
+        return new Vector2(x, y);
     }
 
     private void ChangeBlockColor(GameObject block, Color col)
