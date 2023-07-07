@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     private GameObject[,] grid = new GameObject[72, 48];
     private GameObject nextBlock;
 
+
     // Start is called before the first frame update
     void Start()
     {
@@ -18,6 +19,44 @@ public class GameManager : MonoBehaviour
         playerManager.currentBlock = SpawnBlock();
         AddToGrid(playerManager.currentBlock);
         nextBlock = SpawnNextBlock();
+        InvokeRepeating("MoveSand", 0.0f, 0.2f);
+    }
+
+    private void MoveSand()
+    {
+
+        for(int row=0; row < grid.GetLength(0); row++)
+        {
+            for(int col=0; col<grid.GetLength(1); col++)
+            {
+                GameObject sand = grid[row, col];
+                if(sand != null && row > 0 && col > 0 && col < 47)
+                {
+                    GameObject sandBelow = grid[row - 1, col];
+                    GameObject sandLeft = grid[row, col - 1];
+                    GameObject sandLeftBelow = grid[row - 1, col - 1];
+                    GameObject sandRight = grid[row, col + 1];
+                    GameObject sandRightBelow = grid[row - 1, col + 1];
+                    if(sandBelow == null)
+                    {
+                        sand.transform.position += new Vector3(0, -0.5f);
+                        grid[row - 1, col] = sand;
+                        grid[row, col] = null;
+                    } else if(sandLeft == null && sandLeftBelow == null)
+                    {
+                        sand.transform.position += new Vector3(-0.5f, -0.5f);
+                        grid[row - 1, col - 1] = sand;
+                        grid[row, col] = null;
+                    } else if(sandRight == null && sandRightBelow == null)
+                    {
+                        sand.transform.position += new Vector3(0.5f, -0.5f);
+                        grid[row - 1, col + 1] = sand;
+                        grid[row, col] = null;
+                    }
+                }
+            }
+        }
+
     }
 
     private GameObject SpawnNextBlock()
@@ -61,7 +100,7 @@ public class GameManager : MonoBehaviour
         Color rndColor = colorList[UnityEngine.Random.Range(0,colorList.Length)];
         ChangeBlockColor(block, rndColor);
 
-        block.transform.position = new Vector3(0, 0);
+        block.transform.position = new Vector3(9, 30);
         return block;
     }
 
