@@ -23,9 +23,59 @@ public class GameManager : MonoBehaviour
         InvokeRepeating("UpdateGame", 0.0f, 0.2f);
     }
 
+    private HashSet<GameObject> FindAlignedBlocks(GameObject sand,
+        HashSet<GameObject> sandSet)
+    {
+        Vector3 point = ToGridCoord(sand.transform);
+        HashSet<GameObject> surroundingSands = new HashSet<GameObject>();
+
+        for(double angle=0; angle<2*Math.PI; angle+= Math.PI/2)
+        {
+            int xOffset = Mathf.RoundToInt(Mathf.Cos((float)angle));
+            int yOffset = Mathf.RoundToInt(Mathf.Sin((float)angle));
+            int x = (int)point.x + xOffset;
+            int y = (int)point.y + yOffset;
+
+            if (y >= 0 && y <= 71 && x >= 0 && x <= 47)
+            {
+                GameObject sandToAdd = grid[y, x];
+                if(sandToAdd != null)
+                {
+                    surroundingSands.Add(sandToAdd);
+                }
+            }
+        }
+
+        sandSet.Add(sand);
+        if (surroundingSands.Count == 0 && !sandSet.Contains(sand))
+        {
+            return sandSet;
+        }
+        else
+        {
+            foreach(GameObject surroundSand in surroundingSands)
+            {
+                if(!sandSet.Contains(surroundSand))
+                {
+                    sandSet.Add(surroundSand);
+                    sandSet.UnionWith(FindAlignedBlocks(surroundSand, sandSet));
+                }
+            }
+            
+            return sandSet;
+        }
+
+    }
+
     private void ChangePlayerBlock()
     {
         playerManager.inputEnabled = true;
+        if(grid[0, 0] != null)
+        {
+            HashSet<GameObject> sands = FindAlignedBlocks(grid[0, 0], new HashSet<GameObject>());
+            print("CHECK");
+        }
+
         playerManager.currentBlock = nextBlock;
         playerManager.currentBlock.transform.position = spawnPoint;
         AddToGrid(playerManager.currentBlock);
@@ -35,7 +85,6 @@ public class GameManager : MonoBehaviour
     private void GlobalMoveSand()
     {
         bool sandMoved = false;
-
         for(int row=0; row < grid.GetLength(0); row++)
         {
             for(int col=0; col<grid.GetLength(1); col++)
