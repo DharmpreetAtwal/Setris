@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
 
     private void ChangePlayerBlock()
     {
+        playerManager.inputEnabled = true;
         playerManager.currentBlock = nextBlock;
         playerManager.currentBlock.transform.position = spawnPoint;
         AddToGrid(playerManager.currentBlock);
@@ -50,10 +51,10 @@ public class GameManager : MonoBehaviour
                         grid[row, col] = null;
                         sandMoved = true;
                         continue;
-                    } 
+                    }
                 }
 
-                if(sand != null && row > 0 && row < 71 && col > 0 && col < 47)
+                if (sand != null && row > 0 && row < 71 && col > 0 && col < 47)
                 {
                     GameObject sandLeft = grid[row, col - 1];
                     GameObject sandLeftBelow = grid[row - 1, col - 1];
@@ -65,6 +66,7 @@ public class GameManager : MonoBehaviour
                         grid[row - 1, col - 1] = sand;
                         grid[row, col] = null;
                         sandMoved = true;
+                        playerManager.inputEnabled = false;
                     }
                     else if(sandRight == null && sandRightBelow == null && col < 47)
                     {
@@ -72,6 +74,7 @@ public class GameManager : MonoBehaviour
                         grid[row - 1, col + 1] = sand;
                         grid[row, col] = null;
                         sandMoved = true;
+                        playerManager.inputEnabled = false;
                     }
                 }
             }
@@ -100,9 +103,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void CheckUpdateTileBounds(GameObject block, int dir)
+    private void CheckUpdateTileBounds(GameObject block)
     {
-        block.transform.position += new Vector3(dir, 0);
         foreach (Transform tile in block.transform)
         {
             foreach(Transform sand in tile)
@@ -115,16 +117,15 @@ public class GameManager : MonoBehaviour
                 else if(point.x > 47)
                 {
                     block.transform.position += new Vector3(-1, 0);
+                } else if(point.y < 0)
+                {
+                    block.transform.position += new Vector3(1, 0);
                 }
-                //else if(grid[(int)point.y, (int)point.x] != null)
-                //{
-                //    block.transform.position += new Vector3(-dir, 0);
-                //}
+
             }
         }
     }
 
-    // TODO: Move currentBlock gameObject around in MoveSand and CheckPlayerInput
     private void CheckPlayerInput()
     {
         GameObject currBlock = playerManager.currentBlock;
@@ -132,17 +133,31 @@ public class GameManager : MonoBehaviour
 
         if (playerManager.input[0] && pos.x > 0)
         {
-            CheckUpdateTileBounds(currBlock.gameObject, -1);
+            currBlock.transform.position += new Vector3(-1, 0);
+            CheckUpdateTileBounds(currBlock.gameObject);
+            ClearUpdateGrid();
+        }
+
+        if (playerManager.input[1])
+        {
+            currBlock.transform.position += new Vector3(0, -1);
+            CheckUpdateTileBounds(currBlock.gameObject);
             ClearUpdateGrid();
         }
 
         if (playerManager.input[2])
         {
-            CheckUpdateTileBounds(currBlock, 1);
+            currBlock.transform.position += new Vector3(1, 0);
+            CheckUpdateTileBounds(currBlock);
             ClearUpdateGrid();
         }
 
-        playerManager.input = new bool[] { false, false, false, };
+        if (playerManager.input[3])
+        {
+
+        }
+
+        playerManager.input = new bool[] { false, false, false, false};
     }
 
     private void UpdateGame()
