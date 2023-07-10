@@ -43,7 +43,14 @@ public class GameManager : MonoBehaviour
                 {
                     Color colToAdd = sandToAdd.GetComponent<SpriteRenderer>().color;
                     Color colCheck = sand.GetComponent<SpriteRenderer>().color;
-                    if (colToAdd == colCheck) { surroundingSands.Add(sandToAdd); }
+
+                    float hAdd, sAdd, vAdd;
+                    float hCheck, sCheck, vCheck;
+
+                    Color.RGBToHSV(colToAdd, out hAdd, out sAdd, out vAdd);
+                    Color.RGBToHSV(colCheck, out hCheck, out sCheck, out vCheck);
+
+                    if (hAdd == hCheck) { surroundingSands.Add(sandToAdd); }
                 }
             }
         }
@@ -267,7 +274,16 @@ public class GameManager : MonoBehaviour
         {
             foreach (Transform sandT in tileTransform)
             {
-                sandT.gameObject.GetComponent<SpriteRenderer>().color = col;
+                float h, s, v;
+                Color.RGBToHSV(col, out h, out s, out v);
+
+                Color currCol =
+                    sandT.gameObject.GetComponent<SpriteRenderer>().color;
+                float currh, currs, currv;
+                Color.RGBToHSV(currCol, out currh, out currs, out currv);
+
+                sandT.gameObject.GetComponent<SpriteRenderer>().color
+                    = Color.HSVToRGB(h, currs, currv);
             }
         }
     }
