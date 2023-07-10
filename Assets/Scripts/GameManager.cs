@@ -41,7 +41,9 @@ public class GameManager : MonoBehaviour
                 GameObject sandToAdd = grid[y, x];
                 if(sandToAdd != null)
                 {
-                    surroundingSands.Add(sandToAdd);
+                    Color colToAdd = sandToAdd.GetComponent<SpriteRenderer>().color;
+                    Color colCheck = sand.GetComponent<SpriteRenderer>().color;
+                    if (colToAdd == colCheck) { surroundingSands.Add(sandToAdd); }
                 }
             }
         }
@@ -67,19 +69,33 @@ public class GameManager : MonoBehaviour
 
     }
 
+    private void CheckForAlign()
+    {
+        for(int y=0; y<72; y++)
+        {
+            if (grid[y, 0] != null)
+            {
+                HashSet<GameObject> sands = FindAlignedBlocks(grid[y, 0], new HashSet<GameObject>());
+                bool align = false;
+                foreach (GameObject sand in sands)
+                {
+                    Vector3 point = ToGridCoord(sand.transform);
+                    if (point.x == 47) { align = true; }
+                }
+
+                if (align) { foreach (GameObject sand in sands) { Destroy(sand); } }
+            }
+        }
+    }
+
     private void ChangePlayerBlock()
     {
-        playerManager.inputEnabled = true;
-        if(grid[0, 0] != null)
-        {
-            HashSet<GameObject> sands = FindAlignedBlocks(grid[0, 0], new HashSet<GameObject>());
-            print("CHECK");
-        }
-
+        CheckForAlign();
         playerManager.currentBlock = nextBlock;
         playerManager.currentBlock.transform.position = spawnPoint;
         AddToGrid(playerManager.currentBlock);
         nextBlock = SpawnNextBlock();
+        playerManager.inputEnabled = true;
     }
 
     private void GlobalMoveSand()
@@ -103,6 +119,8 @@ public class GameManager : MonoBehaviour
                     }
                 }
 
+                // TODO: SEPERATE INTO LEFT/RIGHT
+                // CURRENTLY CAUSES SAND TO PILE UP ON EDGES WITHOUT FALLING
                 if (sand != null && row > 0 && row < 71 && col > 0 && col < 47)
                 {
                     GameObject sandLeft = grid[row, col - 1];

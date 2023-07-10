@@ -237,10 +237,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   colorList:
-  - {r: 1, g: 1, b: 0, a: 1}
   - {r: 1, g: 0, b: 0, a: 1}
-  - {r: 0, g: 1, b: 0, a: 1}
-  - {r: 0, g: 0.07410216, b: 1, a: 1}
+  - {r: 0, g: 0, b: 1, a: 1}
   blockPrefabList:
   - {fileID: 7498225551917203769, guid: f51ee0e62a99f405da0c89c3864979a8, type: 3}
   - {fileID: 6713555854234312663, guid: 0cfc4054e51814c8bba01acec551882c, type: 3}
@@ -591,6 +589,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentBlock: {fileID: 0}
   input: 000000
+  inputEnabled: 1
 --- !u!4 &1786419241
 Transform:
   m_ObjectHideFlags: 0
