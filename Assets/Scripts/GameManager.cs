@@ -1,26 +1,53 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
     public Color[] colorList;
     public GameObject[] blockPrefabList;
+
     private PlayerManager playerManager;
     private GameObject[,] grid = new GameObject[72, 48];
     private GameObject nextBlock;
-    private Vector3 spawnPoint = new Vector3(9, 30);
+
+    private Vector3 spawnPoint = new Vector3(9, 31);
     private Vector3 nextBlockSpawnPoint = new Vector3(-8.2f, 23.3f);
+
+    private string currName;
+    private int currScore;
+
+    private string highScoreName;
+    private int highScore;
 
     // Start is called before the first frame update
     void Start()
     {
+        SaveData load = LoadSave();
+        highScoreName = load.name;
+        highScore = load.score;
+
+        MainUIManager.Instance.UpdateHighScore(highScore, highScoreName);
+        currName = StartMenuUIManager.Instance.playerName;
+        currScore = 0;
+
         playerManager = GameObject.Find("Player").GetComponent<PlayerManager>();
         playerManager.currentBlock = SpawnBlock();
         AddToGrid(playerManager.currentBlock);
         nextBlock = SpawnNextBlock();
         InvokeRepeating("UpdateGame", 0.0f, 0.2f);
+    }
+
+    private void GameOver()
+    {
+        CancelInvoke("UpdateGame");
+        if(currScore > highScore)
+        {
+            SaveScore(currName, currScore);
+        }
+        MainUIManager.Instance.DisplayGameOver();
     }
 
     private HashSet<GameObject> FindAlignedBlocks(GameObject sand,
@@ -90,14 +117,21 @@ public class GameManager : MonoBehaviour
                     if (point.x == 47) { align = true; }
                 }
 
-                if (align) { foreach (GameObject sand in sands) { Destroy(sand); } }
+                if (align)
+                {
+                    foreach (GameObject sand in sands)
+                    {
+                        currScore++;
+                        Destroy(sand);
+                    }
+                    MainUIManager.Instance.UpdateScore(currScore);
+                }
             }
         }
     }
 
     private void ChangePlayerBlock()
     {
-        CheckForAlign();
         playerManager.currentBlock = nextBlock;
         playerManager.currentBlock.transform.position = spawnPoint;
         AddToGrid(playerManager.currentBlock);
@@ -107,6 +141,7 @@ public class GameManager : MonoBehaviour
 
     private void GlobalMoveSand()
     {
+        CheckForAlign();
         bool sandMoved = false;
         for(int row=0; row < grid.GetLength(0); row++)
         {
@@ -141,6 +176,7 @@ public class GameManager : MonoBehaviour
                         grid[row, col] = null;
                         sandMoved = true;
                         playerManager.inputEnabled = false;
+                        if(row == 60) { GameOver(); }
                     }
                     else if(sandRight == null && sandRightBelow == null && col < 47)
                     {
@@ -149,6 +185,7 @@ public class GameManager : MonoBehaviour
                         grid[row, col] = null;
                         sandMoved = true;
                         playerManager.inputEnabled = false;
+                        if (row == 60) { GameOver(); }
                     }
                 }
             }
@@ -298,6 +335,41 @@ public class GameManager : MonoBehaviour
 
         block.transform.position = spawnPoint;
         return block;
+    }
+
+    [System.Serializable]
+    class SaveData
+    {
+        public string name;
+        public int score;
+    }
+
+    private void SaveScore(string name, int score)
+    {
+        SaveData save = new SaveData();
+        save.name = name;
+        save.score = score;
+
+        string json = JsonUtility.ToJson(save);
+        File.WriteAllText(Application.persistentDataPath + "highscore.json"
+            , json);
+    }
+
+    private SaveData LoadSave()
+    {
+        string path = Application.persistentDataPath + "highscore.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            return JsonUtility.FromJson<SaveData>(json);
+        }
+        else
+        {
+            SaveData noone = new SaveData();
+            noone.name = "";
+            noone.score = 0;
+            return noone;
+        }
     }
 
     //private void _CreateBloc()
