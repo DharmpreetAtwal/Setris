@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     private GameObject[,] grid = new GameObject[72, 48];
     private GameObject nextBlock;
     private Vector3 spawnPoint = new Vector3(9, 30);
-    private Vector3 nextBlockSpawnPoint = new Vector3(-9, 24);
+    private Vector3 nextBlockSpawnPoint = new Vector3(-8.2f, 23.3f);
 
     // Start is called before the first frame update
     void Start()
